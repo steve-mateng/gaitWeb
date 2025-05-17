@@ -18,5 +18,5 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         if response.status_code == 200:
-            response.data['username'] = request.user.username
+            response.data['username'] = request.user.username  # TODO fix
         return response
