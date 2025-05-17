@@ -44,7 +44,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'rest_framework_simplejwt',
-    'corsheaders',
+    'corsheaders',  # 跨域支持app
 ]
 
 MIDDLEWARE = [
@@ -141,7 +141,12 @@ REST_FRAMEWORK = {
 }
 
 # 允许所有跨域请求（仅限开发环境）
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False  # TODO 仅限开发环境为True，实际部署环境为False
+
+# 允许特定来源（生产环境）
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8080",  # TODO 替换为实际的前端地址
+]
 
 # JWT令牌有效期
 SIMPLE_JWT = {
