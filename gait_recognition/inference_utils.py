@@ -4,6 +4,10 @@ import cv2
 import os
 from pathlib import Path
 
+import faiss
+
+from gait_recognition.models import GaitFeature
+
 
 class GaitSetInference:
     def __init__(self, model_path):
@@ -91,3 +95,68 @@ class GaitSetInference:
 
         # 返回第一个输出（嵌入向量）
         return outputs[0]
+
+
+class FeatureMatcher:
+    def __init__(self, dimension=256, similarity_threshold=0.85):
+        """初始化FAISS索引并加载已知特征
+
+        Args:
+            dimension: 特征向量维度
+            similarity_threshold: 相似度阈值
+        """
+        self.dimension = dimension
+        self.similarity_threshold = similarity_threshold
+
+        # 初始化FAISS索引
+        self.index = faiss.IndexFlatL2(dimension)  # 使用L2距离
+
+        # 加载已知特征
+        self._load_known_features()
+
+    def _load_known_features(self):
+        """从数据库加载所有已知特征到FAISS索引"""
+        features = GaitFeature.objects.all()
+
+        if not features:
+            # 如果没有注册用户，创建一个虚拟向量
+            dummy_vector = np.zeros((1, self.dimension), dtype=np.float32)
+            self.index.add(dummy_vector)
+            return
+
+        # 转换为numpy数组并添加到索引
+        vectors = np.vstack([f.get_feature().reshape(1, -1) for f in features])
+        self.index.add(vectors)
+
+        # 保存特征与用户ID的映射
+        self.id_map = {i: f.user_id for i, f in enumerate(features)}
+        self.id_map[-1] = None  # 默认未知用户
+
+    def match(self, query_vector):
+        """执行特征匹配查询
+
+        Args:
+            query_vector: 查询特征向量
+
+        Returns:
+            tuple: (user_id, similarity_score)
+        """
+        # 确保查询向量是正确的形状
+        if query_vector.shape != (1, self.dimension):  # TODO dimension需要手动设置吗？如何知道dimension是多少？
+            query_vector = query_vector.reshape(1, -1)
+
+        # 执行FAISS搜索
+        distances, indices = self.index.search(query_vector, 1)
+
+        # 计算相似度分数（余弦相似度）
+        distance = distances[0][0]
+        index = indices[0][0]
+
+        # L2距离转相似度
+        similarity = 1 / (1 + distance)
+
+        # 如果相似度低于阈值，视为未知用户
+        if similarity < self.similarity_threshold:
+            return None, similarity
+
+        return self.id_map[index], similarity
