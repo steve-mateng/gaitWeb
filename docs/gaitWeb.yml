@@ -1,0 +1,37 @@
+name: gaitWeb
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.11
+  - numpy=1.26.0
+  - opencv=4.11.0
+  - faiss-cpu=1.9.0
+  - libprotobuf=5.28.3
+  - onnxruntime=1.20.1
+  - mkl-service=2.4.0
+  - mkl_fft=1.3.11
+  - mkl_random=1.2.8
+  - tbb=2021.13.0   # ✅ 升级到兼容 OpenCV 4.11 的版本
+  - sympy=1.14.0
+  - coloredlogs=15.0.1
+  - humanfriendly=10.0
+  - python-tzdata=2025.2
+  - pip
+
+  - pip:
+      - django==4.2.21
+      - djangorestframework==3.16.0
+      - django-cors-headers==4.7.0
+      - djangorestframework-simplejwt==5.5.0
+      - einops==0.8.1
+      - kornia==0.8.1
+      - packaging==25.0
+      - protobuf==6.30.2
+      - pyreadline3==3.5.4
+      - tqdm==4.67.1
+      - tensorboard==2.19.0
+      - tensorboard-data-server==0.7.2
+      - flatbuffers==25.2.10
+      - fsspec==2025.3.2
